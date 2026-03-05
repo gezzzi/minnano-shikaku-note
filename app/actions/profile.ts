@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 export async function updateProfile(formData: FormData) {
@@ -26,6 +27,10 @@ export async function updateProfile(formData: FormData) {
   if (error) {
     return { error: "更新に失敗しました" };
   }
+
+  revalidatePath("/mypage/settings");
+  revalidatePath("/mypage");
+  revalidatePath("/", "layout");
 
   return { success: true };
 }
