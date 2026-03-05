@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { createClient } from "@/lib/supabase/server";
 import { Header } from "@/app/components/layout/Header";
 import { BottomNav } from "@/app/components/layout/BottomNav";
@@ -63,6 +64,7 @@ export default async function RootLayout({
         <main>{children}</main>
         <BottomNav />
       </body>
+      <GoogleAnalytics gaId="G-ECC0RPM9MG" />
     </html>
   );
 }
