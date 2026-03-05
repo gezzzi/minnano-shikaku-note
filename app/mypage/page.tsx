@@ -3,9 +3,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Settings } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { PostCardGrid } from "@/app/components/posts/PostCardGrid";
+import { InfinitePostList } from "@/app/components/posts/InfinitePostList";
 import { MypageTabs } from "@/app/components/auth/MypageTabs";
-import type { PostCard } from "@/lib/types";
+import { fetchPosts, type FeedFilter } from "@/app/actions/posts";
 
 export const metadata: Metadata = {
   title: "マイページ",
@@ -32,35 +32,8 @@ export default async function MypagePage({
     .eq("id", user.id)
     .single();
 
-  const { data: interactions } = activeTab === "bookmarks"
-    ? await supabase
-        .from("bookmarks")
-        .select("post_id")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-    : await supabase
-        .from("likes")
-        .select("post_id")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-  const postIds = (interactions ?? []).map((i) => i.post_id);
-
-  let posts: PostCard[] = [];
-  if (postIds.length > 0) {
-    const { data } = await supabase
-      .from("posts")
-      .select("*, category:categories(name, slug)")
-      .in("id", postIds)
-      .eq("is_published", true);
-
-    const postMap = new Map(
-      ((data || []) as PostCard[]).map((post) => [post.id, post])
-    );
-    posts = postIds
-      .map((id) => postMap.get(id))
-      .filter((post): post is PostCard => !!post);
-  }
+  const filter: FeedFilter = { type: activeTab, userId: user.id };
+  const { posts, hasMore } = await fetchPosts(filter, 0);
 
   return (
     <div className="max-w-md mx-auto px-4 py-6">
@@ -100,7 +73,11 @@ export default async function MypagePage({
 
       {/* Content */}
       <div className="mt-4">
-        <PostCardGrid posts={posts} />
+        <InfinitePostList
+          initialPosts={posts}
+          filter={filter}
+          initialHasMore={hasMore}
+        />
       </div>
     </div>
   );

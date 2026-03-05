@@ -3,8 +3,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { PostCardGrid } from "@/app/components/posts/PostCardGrid";
-import type { PostCard } from "@/lib/types";
+import { InfinitePostList } from "@/app/components/posts/InfinitePostList";
+import { fetchPosts, type FeedFilter } from "@/app/actions/posts";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -41,12 +41,8 @@ export default async function CategoryPage({ params }: Props) {
 
   if (!category) notFound();
 
-  const { data: posts } = await supabase
-    .from("posts")
-    .select("*, category:categories(name, slug)")
-    .eq("category_id", category.id)
-    .eq("is_published", true)
-    .order("created_at", { ascending: false });
+  const filter: FeedFilter = { type: "category", categoryId: category.id };
+  const { posts, hasMore } = await fetchPosts(filter, 0);
 
   return (
     <div className="max-w-md mx-auto px-4 py-4">
@@ -64,7 +60,11 @@ export default async function CategoryPage({ params }: Props) {
         <p className="mb-4 text-sm text-gray-500">{category.description}</p>
       )}
 
-      <PostCardGrid posts={(posts || []) as PostCard[]} />
+      <InfinitePostList
+        initialPosts={posts}
+        filter={filter}
+        initialHasMore={hasMore}
+      />
     </div>
   );
 }

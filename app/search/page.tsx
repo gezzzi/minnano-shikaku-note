@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { Search } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
-import { PostCardGrid } from "@/app/components/posts/PostCardGrid";
 import { SearchInput } from "@/app/components/search/SearchInput";
-import type { PostCard } from "@/lib/types";
+import { InfinitePostList } from "@/app/components/posts/InfinitePostList";
+import { fetchPosts, type FeedFilter } from "@/app/actions/posts";
 
 interface Props {
   searchParams: Promise<{ q?: string }>;
@@ -19,19 +18,22 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 export default async function SearchPage({ searchParams }: Props) {
   const { q } = await searchParams;
 
-  let posts: PostCard[] = [];
-
+  let initialContent = null;
   if (q) {
-    const supabase = await createClient();
-    const { data } = await supabase
-      .from("posts")
-      .select("*, category:categories(name, slug)")
-      .eq("is_published", true)
-      .or(`title.ilike.%${q}%,description.ilike.%${q}%`)
-      .order("created_at", { ascending: false })
-      .limit(50);
-
-    posts = (data || []) as PostCard[];
+    const filter: FeedFilter = { type: "search", query: q };
+    const { posts, hasMore } = await fetchPosts(filter, 0);
+    initialContent = (
+      <>
+        <p className="mb-4 text-sm text-gray-500">
+          「{q}」の検索結果
+        </p>
+        <InfinitePostList
+          initialPosts={posts}
+          filter={filter}
+          initialHasMore={hasMore}
+        />
+      </>
+    );
   }
 
   return (
@@ -39,12 +41,7 @@ export default async function SearchPage({ searchParams }: Props) {
       <SearchInput initialQuery={q || ""} />
 
       {q ? (
-        <>
-          <p className="mb-4 text-sm text-gray-500">
-            「{q}」の検索結果: {posts.length}件
-          </p>
-          <PostCardGrid posts={posts} />
-        </>
+        initialContent
       ) : (
         <div className="flex flex-col items-center justify-center py-20 text-gray-400">
           <Search className="mb-3 h-12 w-12" />

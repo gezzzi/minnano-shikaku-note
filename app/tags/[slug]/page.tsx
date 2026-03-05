@@ -3,8 +3,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { PostCardGrid } from "@/app/components/posts/PostCardGrid";
-import type { PostCard } from "@/lib/types";
+import { InfinitePostList } from "@/app/components/posts/InfinitePostList";
+import { fetchPosts, type FeedFilter } from "@/app/actions/posts";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -46,17 +46,8 @@ export default async function TagPage({ params }: Props) {
 
   const postIds = (postTags ?? []).map((pt) => pt.post_id);
 
-  let posts: PostCard[] = [];
-  if (postIds.length > 0) {
-    const { data } = await supabase
-      .from("posts")
-      .select("*, category:categories(name, slug)")
-      .in("id", postIds)
-      .eq("is_published", true)
-      .order("created_at", { ascending: false });
-
-    posts = (data || []) as PostCard[];
-  }
+  const filter: FeedFilter = { type: "tag", postIds };
+  const { posts, hasMore } = await fetchPosts(filter, 0);
 
   return (
     <div className="max-w-md mx-auto px-4 py-4">
@@ -70,7 +61,11 @@ export default async function TagPage({ params }: Props) {
         <h1 className="text-xl font-bold">#{tag.name}</h1>
       </div>
 
-      <PostCardGrid posts={posts} />
+      <InfinitePostList
+        initialPosts={posts}
+        filter={filter}
+        initialHasMore={hasMore}
+      />
     </div>
   );
 }

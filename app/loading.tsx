@@ -1,4 +1,5 @@
 import { Skeleton } from "@/app/components/ui/Skeleton";
+import { PostFeedSkeleton } from "@/app/components/posts/PostCardSkeleton";
 
 export default function Loading() {
   return (
@@ -13,22 +14,7 @@ export default function Loading() {
         ))}
       </div>
 
-      {/* Feed skeleton */}
-      <div className="max-w-md mx-auto">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="mb-8 border-b border-gray-100 pb-4">
-            <div className="px-4 py-3 flex items-center gap-3">
-              <Skeleton className="w-8 h-8 rounded-full" />
-              <Skeleton className="h-4 w-24" />
-            </div>
-            <Skeleton className="aspect-square w-full" />
-            <div className="px-4 py-3 space-y-2">
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-4 w-3/4" />
-            </div>
-          </div>
-        ))}
-      </div>
+      <PostFeedSkeleton />
     </>
   );
 }
