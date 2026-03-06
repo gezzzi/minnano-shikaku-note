@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileForm } from "@/app/components/auth/ProfileForm";
+import { signOut } from "@/app/actions/auth";
 
 export const metadata: Metadata = {
   title: "プロフィール設定",
@@ -38,6 +39,19 @@ export default async function SettingsPage() {
         initialDisplayName={profile?.display_name || ""}
         initialAvatarUrl={profile?.avatar_url || ""}
       />
+
+      {/* Logout */}
+      <div className="mt-10 pt-6 border-t border-gray-200">
+        <form action={signOut}>
+          <button
+            type="submit"
+            className="flex items-center gap-2 text-sm text-red-500 hover:text-red-600 transition-colors cursor-pointer"
+          >
+            <LogOut className="h-4 w-4" />
+            ログアウト
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

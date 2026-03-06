@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { createClient } from "@/lib/supabase/server";
 import { Header } from "@/app/components/layout/Header";
+import { Sidebar } from "@/app/components/layout/Sidebar";
 import { BottomNav } from "@/app/components/layout/BottomNav";
 import type { Profile } from "@/lib/types";
 import "./globals.css";
@@ -59,7 +60,6 @@ export default async function RootLayout({
     headerUser = {
       displayName: p?.display_name || "ユーザー",
       avatarUrl: p?.avatar_url || null,
-      email: user.email || "",
     };
     unreadCount = count ?? 0;
   }
@@ -67,10 +67,14 @@ export default async function RootLayout({
   return (
     <html lang="ja">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white min-h-screen font-sans text-gray-900 pb-20`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white min-h-screen font-sans text-gray-900 pt-[52px] pb-20 lg:pt-0 lg:pb-0`}
       >
         <Header user={headerUser} unreadCount={unreadCount} />
-        <main>{children}</main>
+        <Sidebar
+          user={headerUser ? { displayName: headerUser.displayName, avatarUrl: headerUser.avatarUrl } : null}
+          unreadCount={unreadCount}
+        />
+        <main className="lg:ml-[220px]">{children}</main>
         <BottomNav />
       </body>
       <GoogleAnalytics gaId="G-ECC0RPM9MG" />

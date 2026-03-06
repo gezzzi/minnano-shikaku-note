@@ -48,7 +48,7 @@ export function UserMenu({ displayName, avatarUrl, email }: UserMenuProps) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-10 z-50 w-56 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
+        <div className="absolute left-0 top-10 z-50 w-56 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg">
           <div className="border-b border-gray-100 px-4 py-3">
             <p className="text-sm font-semibold truncate">{displayName}</p>
             <p className="text-xs text-gray-500 truncate">{email}</p>
