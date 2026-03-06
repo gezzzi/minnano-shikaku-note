@@ -8,13 +8,22 @@ import { LikeButton } from "@/app/components/posts/LikeButton";
 import { BookmarkButton } from "@/app/components/posts/BookmarkButton";
 import { ShareButtons } from "@/app/components/ui/ShareButtons";
 import { PostCardGrid } from "@/app/components/posts/PostCardGrid";
+import { CommentSection } from "@/app/components/posts/CommentSection";
 import { formatRelativeDate } from "@/lib/utils/format";
-import type { Post, PostImage, Tag, Category, PostCard } from "@/lib/types";
+import type { Post, PostImage, Tag, Category, PostCard, Profile } from "@/lib/types";
 
 interface PostWithDetails extends Post {
   category: Category;
   images: PostImage[];
   tags: Tag[];
+}
+
+interface CommentWithUser {
+  id: string;
+  content: string;
+  created_at: string;
+  user_id: string;
+  user: Profile;
 }
 
 interface Props {
@@ -81,7 +90,7 @@ async function getUserInteractions(postId: string) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) return { liked: false, bookmarked: false };
+  if (!user) return { liked: false, bookmarked: false, userId: undefined };
 
   const [{ data: like }, { data: bookmark }] = await Promise.all([
     supabase
@@ -98,7 +107,19 @@ async function getUserInteractions(postId: string) {
       .maybeSingle(),
   ]);
 
-  return { liked: !!like, bookmarked: !!bookmark };
+  return { liked: !!like, bookmarked: !!bookmark, userId: user.id };
+}
+
+async function getComments(postId: string): Promise<CommentWithUser[]> {
+  const supabase = await createClient();
+
+  const { data } = await supabase
+    .from("comments")
+    .select("*, user:profiles!comments_user_id_fkey(*)")
+    .eq("post_id", postId)
+    .order("created_at", { ascending: true });
+
+  return (data || []) as unknown as CommentWithUser[];
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -124,10 +145,12 @@ export default async function PostDetailPage({ params }: Props) {
 
   if (!post) notFound();
 
-  const [{ liked, bookmarked }, relatedPosts] = await Promise.all([
-    getUserInteractions(post.id),
-    getRelatedPosts(post.category_id, post.id),
-  ]);
+  const [{ liked, bookmarked, userId }, relatedPosts, comments] =
+    await Promise.all([
+      getUserInteractions(post.id),
+      getRelatedPosts(post.category_id, post.id),
+      getComments(post.id),
+    ]);
 
   const postUrl = `${process.env.NEXT_PUBLIC_SITE_URL || ""}/posts/${post.slug}`;
 
@@ -221,6 +244,14 @@ export default async function PostDetailPage({ params }: Props) {
           {post.description}
         </div>
       </div>
+
+      {/* Comments */}
+      <CommentSection
+        postId={post.id}
+        postSlug={post.slug}
+        comments={comments}
+        currentUserId={userId}
+      />
 
       {/* Related Posts */}
       {relatedPosts.length > 0 && (

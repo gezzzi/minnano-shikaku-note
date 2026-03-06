@@ -67,6 +67,7 @@ export async function createPost(formData: FormData) {
       slug,
       description: description?.trim() || "",
       category_id: categoryId,
+      author_id: user.id,
       thumbnail_url: imageUrls[0] || null,
       is_published: isPublished,
     })

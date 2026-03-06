@@ -43,12 +43,17 @@ export default async function RootLayout({
   } = await supabase.auth.getUser();
 
   let headerUser = null;
+  let unreadCount = 0;
+
   if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
+    const [{ data: profile }, { count }] = await Promise.all([
+      supabase.from("profiles").select("*").eq("id", user.id).single(),
+      supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("is_read", false),
+    ]);
 
     const p = profile as Profile | null;
     headerUser = {
@@ -56,6 +61,7 @@ export default async function RootLayout({
       avatarUrl: p?.avatar_url || null,
       email: user.email || "",
     };
+    unreadCount = count ?? 0;
   }
 
   return (
@@ -63,7 +69,7 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white min-h-screen font-sans text-gray-900 pb-20`}
       >
-        <Header user={headerUser} />
+        <Header user={headerUser} unreadCount={unreadCount} />
         <main>{children}</main>
         <BottomNav />
       </body>

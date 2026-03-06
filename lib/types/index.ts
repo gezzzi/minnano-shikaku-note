@@ -9,6 +9,8 @@ export type Tag = Database["public"]["Tables"]["tags"]["Row"];
 export type Like = Database["public"]["Tables"]["likes"]["Row"];
 export type Bookmark = Database["public"]["Tables"]["bookmarks"]["Row"];
 export type Follow = Database["public"]["Tables"]["follows"]["Row"];
+export type Comment = Database["public"]["Tables"]["comments"]["Row"];
+export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 
 // Post with related data
 export type PostWithDetails = Post & {

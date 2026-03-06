@@ -8,7 +8,7 @@ const navItems = [
   { key: "home", href: "/", icon: Home },
   { key: "search", href: "/search", icon: Search },
   { key: "create", href: "/posts/new", icon: PlusSquare },
-  { key: "likes", href: "/mypage?tab=likes", icon: Heart },
+  { key: "notifications", href: "/notifications", icon: Heart },
   { key: "mypage", href: "/mypage", icon: User },
 ];
 
