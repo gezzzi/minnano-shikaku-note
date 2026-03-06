@@ -6,7 +6,7 @@ import type { PostCard } from "@/lib/types";
 const PAGE_SIZE = 10;
 
 export type FeedFilter =
-  | { type: "home"; categorySlug?: string }
+  | { type: "home" }
   | { type: "search"; query: string }
   | { type: "category"; categoryId: string }
   | { type: "tag"; postIds: string[] }
@@ -73,17 +73,7 @@ export async function fetchPosts(
     .eq("is_published", true)
     .order("created_at", { ascending: false });
 
-  if (filter.type === "home" && filter.categorySlug) {
-    const { data: category } = await supabase
-      .from("categories")
-      .select("id")
-      .eq("slug", filter.categorySlug)
-      .single();
-
-    if (category) {
-      query = query.eq("category_id", category.id);
-    }
-  } else if (filter.type === "search") {
+  if (filter.type === "search") {
     query = query.or(
       `title.ilike.%${filter.query}%,description.ilike.%${filter.query}%`
     );

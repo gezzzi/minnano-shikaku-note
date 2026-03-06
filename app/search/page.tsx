@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Search } from "lucide-react";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
 import { SearchInput } from "@/app/components/search/SearchInput";
 import { InfinitePostList } from "@/app/components/posts/InfinitePostList";
 import { fetchPosts, type FeedFilter } from "@/app/actions/posts";
@@ -17,6 +18,12 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 
 export default async function SearchPage({ searchParams }: Props) {
   const { q } = await searchParams;
+
+  const supabase = await createClient();
+  const { data: categories } = await supabase
+    .from("categories")
+    .select("*")
+    .order("sort_order");
 
   let initialContent = null;
   if (q) {
@@ -43,13 +50,32 @@ export default async function SearchPage({ searchParams }: Props) {
       {q ? (
         initialContent
       ) : (
-        <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-          <Search className="mb-3 h-12 w-12" />
-          <p className="text-lg font-medium">キーワードで検索</p>
-          <p className="mt-1 text-sm">
-            資格名やトピックを入力してください
-          </p>
-        </div>
+        <>
+          {/* Category grid */}
+          <div className="mt-4">
+            <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">
+              カテゴリー
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              {(categories || []).map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={`/categories/${cat.slug}`}
+                  className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
+                    <span className="text-sm font-bold text-gray-500">
+                      {cat.name.slice(0, 1)}
+                    </span>
+                  </div>
+                  <span className="text-sm font-medium truncate">
+                    {cat.name}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

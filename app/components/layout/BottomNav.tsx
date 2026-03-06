@@ -7,7 +7,7 @@ import { Home, Search, PlusSquare, Heart, User } from "lucide-react";
 const navItems = [
   { key: "home", href: "/", icon: Home },
   { key: "search", href: "/search", icon: Search },
-  { key: "create", href: "/", icon: PlusSquare },
+  { key: "create", href: "/posts/new", icon: PlusSquare },
   { key: "likes", href: "/mypage?tab=likes", icon: Heart },
   { key: "mypage", href: "/mypage", icon: User },
 ];
